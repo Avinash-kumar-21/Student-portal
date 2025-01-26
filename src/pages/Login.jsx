@@ -5,8 +5,8 @@ import { auth } from '../firebase';
 import { Box, Button, TextField, Typography } from '@mui/material';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@123.com');
-  const [password, setPassword] = useState('admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
