@@ -17,6 +17,22 @@ import { Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
+// Reusable navigation items
+const NAV_ITEMS = [
+  { 
+    path: '/dashboard/students', 
+    label: 'Students', 
+    icon: <People />,
+    key: 'students'
+  },
+  { 
+    path: '/dashboard/courses', 
+    label: 'Courses', 
+    icon: <School />,
+    key: 'courses'
+  }
+];
+
 export default function DashboardLayout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -48,18 +64,14 @@ export default function DashboardLayout() {
       </Toolbar>
       <Divider />
       <List>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/dashboard/students">
-            <ListItemIcon><People /></ListItemIcon>
-            <ListItemText primary="Students" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/dashboard/courses">
-            <ListItemIcon><School /></ListItemIcon>
-            <ListItemText primary="Courses" />
-          </ListItemButton>
-        </ListItem>
+        {NAV_ITEMS.map((item) => (
+          <ListItem key={item.key} disablePadding>
+            <ListItemButton component={Link} to={item.path}>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
       <Divider />
       <List>
@@ -78,9 +90,13 @@ export default function DashboardLayout() {
       <AppBar 
         position="fixed" 
         sx={{ 
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: theme.zIndex.drawer + 1,
+          width: { sm: `calc(100% - ${isMobile ? 0 : 240}px)` },
           ml: { sm: `${isMobile ? 0 : 240}px` },
-          width: { sm: `calc(100% - ${isMobile ? 0 : 240}px)` }
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         }}
       >
         <Toolbar>
@@ -103,15 +119,23 @@ export default function DashboardLayout() {
             </IconButton>
             
             <IconButton onClick={handleProfileMenu} sx={{ p: 0 }}>
-              <Avatar alt={currentUser?.email} src="/" />
+              <Avatar 
+                alt={currentUser?.email} 
+                src={currentUser?.photoURL || ''}
+                sx={{ bgcolor: theme.palette.secondary.main }}
+              >
+                {currentUser?.email?.[0]?.toUpperCase()}
+              </Avatar>
             </IconButton>
             
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              <MenuItem>
+              <MenuItem dense>
                 <Typography variant="body2" sx={{ px: 2 }}>
                   {currentUser?.email}
                 </Typography>
@@ -147,8 +171,15 @@ export default function DashboardLayout() {
         sx={{ 
           flexGrow: 1, 
           p: 3,
-          ml: { sm: `${isMobile ? 0 : 0}px` },
-          width: { sm: `calc(100% - ${isMobile ? 0 : 240}px)` }
+          width: { sm: `calc(100% - 240px)` },
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          ...(isMobile && {
+            width: '100%',
+            marginLeft: 0,
+          }),
         }}
       >
         <Toolbar />

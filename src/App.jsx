@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ThemeContext, createAppTheme } from './context/ThemeContext';
@@ -6,9 +6,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useState, useMemo } from 'react';
 
-// Pages
+// Pages & Components
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -24,12 +23,23 @@ function App() {
           <AuthProvider>
             <BrowserRouter>
               <Routes>
+                {/* Public Routes */}
                 <Route path="/login" element={<LoginRoute />} />
-                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route path="/dashboard" element={<Students />} />
-                  <Route path="/dashboard/students" element={<Students />} />
+                
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<DashboardLayout />}>
+                    <Route index element={<Students />} />
+                    <Route path="students" element={<Students />} />
+                    {/* Add more nested dashboard routes here */}
+                  </Route>
                 </Route>
+
+                {/* Root Redirect */}
                 <Route path="/" element={<InitialRoute />} />
+
+                {/* Catch-all 404 Redirect */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </BrowserRouter>
           </AuthProvider>
@@ -39,9 +49,10 @@ function App() {
   );
 }
 
-function ProtectedRoute({ children }) {
+// Route Components
+function ProtectedRoute() {
   const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" replace />;
+  return currentUser ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function LoginRoute() {
@@ -51,11 +62,7 @@ function LoginRoute() {
 
 function InitialRoute() {
   const { currentUser } = useAuth();
-  return currentUser ? (
-    <Navigate to="/dashboard/students" replace />
-  ) : (
-    <Navigate to="/login" replace />
-  );
+  return currentUser ? <Navigate to="/dashboard/students" replace /> : <Navigate to="/login" replace />;
 }
 
 export default App;
